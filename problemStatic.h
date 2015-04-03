@@ -1,0 +1,14 @@
+#ifnef PROBLEMSTATIC_H
+#define PROBLEMSTATIC_H
+
+#define K 2
+#define lambda 20
+#define d_max 15
+
+#import <cmath>
+
+float unary(float pixel_value_x, float pixel_value_y);
+float binary(int label1, int label2);
+float weights(float pixel_value_1, float pixel_value_2);
+
+#endif

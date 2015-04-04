@@ -1,4 +1,4 @@
-
+#include "problemStatic.h"
 
 
 float unary(float pixel_value_x, float pixel_value_y) {

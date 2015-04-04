@@ -1,11 +1,13 @@
-#ifnef PROBLEMSTATIC_H
+#ifndef PROBLEMSTATIC_H
 #define PROBLEMSTATIC_H
 
 #define K 2
 #define lambda 20
 #define d_max 15
 
-#import <cmath>
+#include <cmath>
+
+using namespace std;
 
 float unary(float pixel_value_x, float pixel_value_y);
 float binary(int label1, int label2);

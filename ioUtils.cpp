@@ -18,7 +18,7 @@ void getImage(image &myImage, string fileName) {
 
     for(size_t y=0; y<image.get_height(); ++y)
     {
-        vector<float> tempRow = vector<float>();
+        imageRow tempRow = imageRow();
         for(size_t x=0; x<image.get_width(); ++x)
         {
             float grayScaleValue = 0;

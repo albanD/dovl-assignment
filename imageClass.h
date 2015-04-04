@@ -6,10 +6,13 @@
 
 using namespace std;
 
+typedef vector<float> imageRow;
+typedef vector<imageRow> imageData;
+
 class image {
 
 public:
-    vector<vector<float>> data;
+    imageData data;
     int width;
     int height;
 };

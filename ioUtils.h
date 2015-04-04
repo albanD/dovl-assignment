@@ -6,9 +6,11 @@
 #include <string>
 #include <iostream>
 
+#include "imageClass.h"
+
 using namespace std;
 
-void getImage(vector<vector<array<float,3>>> &data, string fileName);
+void getImage(image &data, string fileName);
 
-void printImage(vector<vector<array<float,3>>> &data, string fileName);
+void printImage(image &data, string fileName);
 #endif

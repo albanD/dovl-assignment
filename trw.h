@@ -4,8 +4,10 @@
 #include <vector>
 #include <array>
 
+#include "imageClass.h"
+
 using namespace std;
 
-void trw(vector<vector<array<float,3>>> data, vector<vector<int>> label);
+void trw(image &Ldata, image &Rdata, vector<vector<int>> label);
 
 #endif

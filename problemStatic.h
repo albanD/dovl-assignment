@@ -1,6 +1,7 @@
 #ifndef PROBLEMSTATIC_H
 #define PROBLEMSTATIC_H
 
+#define NBR_CLASSES 15
 #define K 2
 #define lambda 20
 #define d_max 15

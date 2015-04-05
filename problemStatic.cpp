@@ -13,3 +13,7 @@ float binary(int label1, int label2) {
 float weights(float pixel_value_1, float pixel_value_2) {
     return abs(pixel_value_1-pixel_value_2)<=8 ? 2 : 1;
 }
+
+int getNodeIdFromCoord(int row, int col, int nbrCol) {
+    return row * nbrCol + col;
+}

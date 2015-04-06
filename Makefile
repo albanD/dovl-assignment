@@ -27,3 +27,6 @@ clean:
 
 cl:
 	-rm $(OBJECTS_LIB)
+
+test:
+	-./run_dovl

@@ -1,6 +1,5 @@
 #include "problemStatic.h"
 
-
 float unary(float pixel_value_x, float pixel_value_y) {
     return abs(pixel_value_x - pixel_value_y);
 }
@@ -16,4 +15,12 @@ float weights(float pixel_value_1, float pixel_value_2) {
 
 int getNodeIdFromCoord(int row, int col, int nbrCol) {
     return row * nbrCol + col;
+}
+
+vector<float> weightLine(float edge_weight, int first_label){
+    vector<float> weightLine = vector<float>(NBR_CLASSES);
+    for(int second_label = 0; second_label<NBR_CLASSES; ++second_label) {
+        weightLine[second_label] = edge_weight * binary(first_label, second_label);
+    }
+    return weightLine;
 }

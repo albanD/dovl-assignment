@@ -1,8 +1,7 @@
 #include "trw.h"
 #include "problemStatic.h"
 #include "tree.h"
-
-void generateTrees(image &Ldata, image &Rdata, vector<tree> &trees, vector<reference_wrapper<tree>> treeLookup);//, vector<reference_wrapper<node>> nodeLookup);
+#include <functional>
 
 
 void trw(image &Ldata, image &Rdata, vector<vector<int>> label) {
@@ -13,7 +12,7 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> label) {
     vector<tree> trees;
 
     generateTrees(Ldata, Rdata, trees, treeLookup);
-    
+
 }
 
 

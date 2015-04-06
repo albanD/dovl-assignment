@@ -59,5 +59,37 @@ void generateTrees(image &Ldata, image &Rdata, vector<tree> &trees,
         for(vector<node>::iterator n_iter= treeNodes.begin(), n_end= treeNodes.end(); n_iter < n_end; ++n_iter){
             treeLookup[n_iter->id].push_back(ref(col_tree));
         }
+        trees.push_back(col_tree);
+    }
+
+    // generate a tree for each row
+    for(j=0; j<Ldata.height; ++j) {
+        vector<node> treeNodes = vector<node>();
+        vector<edge> treeEdges = vector<edge>();
+
+        for(i=0; i<Ldata.width; ++i) {
+            int node_id = getNodeIdFromCoord(j, i, nbrCol);
+            node tempNode = node(node_id);
+            for(label=0; label<NBR_CLASSES; ++label) {
+                // TODO unary repartition??
+                // TODO handling negative indexes?
+                tempNode.addUnary(unary(Ldata.data[j][i], Rdata.data[j][i-label]));
+            }
+            if( i+1 < Ldata.width){
+                edge tempEdge = edge();
+                float edge_weight = weights(Ldata.data[j][i], Ldata.data[j][i+1]);
+                for( label=0; label<NBR_CLASSES; ++label){
+                    tempEdge.addLineWeights( weightLine(edge_weight, label));
+                }
+            }
+            treeNodes.push_back(tempNode);
+            nodeLookup[node_id].push_back(ref(tempNode));
+        }
+
+        tree row_tree = tree(treeNodes, treeEdges);
+        for(vector<node>::iterator n_iter= treeNodes.begin(), n_end= treeNodes.end(); n_iter < n_end; ++n_iter){
+            treeLookup[n_iter->id].push_back(ref(row_tree));
+        }
+        trees.push_back(row_tree);
     }
 }

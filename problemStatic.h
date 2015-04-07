@@ -3,7 +3,7 @@
 
 #define NBR_CLASSES 15
 #define K 2
-#define lambda 20
+#define LAMBDA 20
 #define d_max 15
 
 #include <cmath>

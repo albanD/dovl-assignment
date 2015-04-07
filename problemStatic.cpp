@@ -20,7 +20,7 @@ int getNodeIdFromCoord(int row, int col, int nbrCol) {
 vector<float> weightLine(float edge_weight, int first_label){
     vector<float> weightLine = vector<float>(NBR_CLASSES);
     for(int second_label = 0; second_label<NBR_CLASSES; ++second_label) {
-        weightLine[second_label] = edge_weight * binary(first_label, second_label);
+        weightLine[second_label] = LAMBDA * edge_weight * binary(first_label, second_label);
     }
     return weightLine;
 }

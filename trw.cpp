@@ -37,6 +37,8 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> label) {
     int max_id = Ldata.width * Ldata.height;
     bool making_progress = true;
     while(making_progress) {
+        float old_dual_value = dual_value;
+        float improvement = 0;
         making_progress = false;
         for(int curr_id = 0; curr_id < max_id; ++curr_id) {
             vector<reference_wrapper<tree>> concerned_trees = treeLookup[curr_id];
@@ -88,11 +90,14 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> label) {
                 dual_increase += n_iter->get().get_min_unary();
             }
 
-            cout<<"We increased the value of the dual by " << dual_increase <<endl;
             if(dual_increase > 0){
                 making_progress = true;
             }
+            improvement += dual_increase;
         }
+        dual_value = computeDual(trees);
+        cout << "Augmented the global dual by "<< dual_value - old_dual_value
+             <<", incremental improvement report "<< improvement<< endl;
     }
 
 }

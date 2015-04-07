@@ -13,6 +13,7 @@ public:
     vector<edge> edges;
 
     tree(vector<node> nodes, vector<edge> edges);
+    float forward_backward_min_marginals();
 };
 
 

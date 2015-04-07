@@ -3,14 +3,16 @@
 #include "tree.h"
 #include <functional>
 
+
+#include <iostream>
+
 // Functions declaration
 
 void generateTrees(image &Ldata, image &Rdata, vector<tree> &trees,
                    vector<vector<reference_wrapper<tree>>> &treeLookup,
                    vector<vector<reference_wrapper<node>>> &nodeLookup);
-
 void divideUnaries(vector<vector<reference_wrapper<node>>> &nodeLookup);
-
+float computeDual( vector<tree> &trees);
 
 void trw(image &Ldata, image &Rdata, vector<vector<int>> label) {
     // label should be initialized with the same size as data.
@@ -20,9 +22,16 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> label) {
     vector<tree> trees;
 
     // Initialization
+    cout<<"Generating the trees"<<endl;
     generateTrees(Ldata, Rdata, trees, treeLookup, nodeLookup);
+    cout<<"Dividing the unaries"<<endl;
     divideUnaries(nodeLookup);
 
+    // Check
+    cout << "Computation of a dual" << endl;
+    float dual_value = computeDual(trees);
+
+    cout << "Value of the dual: " << dual_value << endl;
 }
 
 
@@ -129,4 +138,17 @@ void divideUnaries(vector<vector<reference_wrapper<node>>> &nodeLookup) {
             }
         }
     }
+}
+
+
+float computeDual(vector<tree> &trees) {
+
+    float dual_value = 0;
+
+    for (vector<tree>::iterator tree_iter= trees.begin(), tree_end = trees.end();
+         tree_iter<tree_end; ++tree_iter) {
+        dual_value += tree_iter->forward_backward_min_marginals();
+    }
+
+    return dual_value;
 }

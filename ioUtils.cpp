@@ -16,10 +16,10 @@ void getImage(image &myImage, string fileName) {
     myImage.width = image.get_width();
     myImage.height = image.get_height();
 
-    for(size_t y=0; y<image.get_height(); ++y)
+    for(int y=0; y<myImage.height; ++y)
     {
         imageRow tempRow = imageRow();
-        for(size_t x=0; x<image.get_width(); ++x)
+        for(int x=0; x<myImage.width; ++x)
         {
             float grayScaleValue = 0;
             grayScaleValue += 0.21*(float)image[y][x].red;
@@ -34,9 +34,9 @@ void getImage(image &myImage, string fileName) {
 void printImage(image &myImage, string fileName) {
     png::image<png::gray_pixel> image(myImage.width,myImage.height);
 
-    for(size_t y=0; y<image.get_height(); ++y)
+    for(int y=0; y<(int)image.get_height(); ++y)
     {
-        for(size_t x=0; x<image.get_width(); ++x)
+        for(int x=0; x<(int)image.get_width(); ++x)
         {
             image[y][x] = png::gray_pixel(myImage.data[y][x]);
         }

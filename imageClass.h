@@ -15,6 +15,9 @@ public:
     imageData data;
     int width;
     int height;
+
+    image();
+    image(vector<vector<int>> &input_array);
 };
 
 #endif

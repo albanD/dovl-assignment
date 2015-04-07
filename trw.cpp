@@ -40,9 +40,11 @@ void generateTrees(image &Ldata, image &Rdata, vector<tree> &trees,
             int node_id = getNodeIdFromCoord(j, i, nbrCol);
             node tempNode = node(node_id);
             for(label=0; label<NBR_CLASSES; ++label) {
-                // TODO unary repartition??
-                // TODO handling negative indexes?
-                tempNode.addUnary(unary(Ldata.data[j][i], Rdata.data[j][i-label]));
+                if(i-label > 0) {
+                    tempNode.addUnary(unary(Ldata.data[j][i], Rdata.data[j][i-label]));
+                } else {
+                    tempNode.addUnary(0);
+                }
             }
             if( j+1 < Ldata.height){
                 edge tempEdge = edge();
@@ -71,9 +73,11 @@ void generateTrees(image &Ldata, image &Rdata, vector<tree> &trees,
             int node_id = getNodeIdFromCoord(j, i, nbrCol);
             node tempNode = node(node_id);
             for(label=0; label<NBR_CLASSES; ++label) {
-                // TODO unary repartition??
-                // TODO handling negative indexes?
-                tempNode.addUnary(unary(Ldata.data[j][i], Rdata.data[j][i-label]));
+                if(i-label>0){
+                    tempNode.addUnary(unary(Ldata.data[j][i], Rdata.data[j][i-label]));
+                } else {
+                    tempNode.addUnary(0);
+                }
             }
             if( i+1 < Ldata.width){
                 edge tempEdge = edge();

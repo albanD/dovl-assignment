@@ -2,6 +2,7 @@
 #include <limits>
 #include <algorithm>
 #include <iostream>
+#include <stdexcept>
 
 tree::tree(vector<node> nodes, vector<edge> edges) {
     this->nodes = nodes;
@@ -12,7 +13,22 @@ float tree::forward_backward_min_marginals(){
     int nb_nodes = nodes.size();
 
     // Do the forward
-    for(int node_pos=0; node_pos < nb_nodes-1; ++node_pos){
+    forward(nodes[nb_nodes-1].id);
+    // Do the backward
+    backward(nodes[0].id);
+
+    if(not proper_min_marginals()) {
+        cout << "We fucked up boyz!" <<endl;
+    }
+
+    return get_min_marginal_for_id(nodes[0].id);
+}
+
+
+
+void tree::forward(int until_nodeId) {
+    int node_pos = 0;
+    while(nodes[node_pos].id != until_nodeId) {
         node from_node = nodes[node_pos];
         edge linking_edge = edges[node_pos];
 
@@ -33,9 +49,14 @@ float tree::forward_backward_min_marginals(){
                 edges[node_pos].weights[source_label][target_label] -= reparam_constant;
             }
         }
+        ++node_pos;
     }
-    // Do the backward
-    for(int node_pos=nb_nodes-1; node_pos > 0; --node_pos){
+}
+
+void tree::backward(int until_nodeId) {
+    int nb_nodes = nodes.size();
+    int node_pos = nb_nodes-1;
+    while(nodes[node_pos].id != until_nodeId) {
         node from_node = nodes[node_pos];
         edge linking_edge = edges[node_pos-1];
 
@@ -56,22 +77,30 @@ float tree::forward_backward_min_marginals(){
                 edges[node_pos-1].weights[target_label][source_label] -= reparam_constant;
             }
         }
+        --node_pos;
     }
+}
 
+bool tree::proper_min_marginals() {
+    // Verify that all the unary are in min-marginal condition
+    int nb_nodes = nodes.size();
     float dual_value = *min_element(nodes[0].unaries.begin(), nodes[0].unaries.end());
-    // Verify that all the min marginals agree and we didn't fuck up.
-    bool do_verification_check = false;
-    if(do_verification_check){
-        for(int node = 1; node<nb_nodes; ++node){
-            float new_dual_value = *min_element(nodes[node].unaries.begin(), nodes[node].unaries.end());
-            if(fabs(new_dual_value - dual_value) > 1e-3) {
-                cout<< "We have an error boyz; "<< dual_value
-                    <<" vs. " << new_dual_value
-                    << " difference of "<< new_dual_value-dual_value<<endl;
-            }
+    for(int node = 1; node<nb_nodes; ++node){
+        float new_dual_value = *min_element(nodes[node].unaries.begin(), nodes[node].unaries.end());
+        if(fabs(new_dual_value - dual_value) > 1e-3) {
+            return false;
         }
     }
+    return true;
+}
 
-    return dual_value;
 
+float tree::get_min_marginal_for_id(int node_id) {
+    for(vector<node>::iterator n_iter=nodes.begin(),n_end=nodes.end();
+        n_iter<n_end; ++n_iter) {
+        if (n_iter->id == node_id) {
+            return *min_element(n_iter->unaries.begin(), n_iter->unaries.end());
+        }
+    }
+    throw invalid_argument("Doesn't belong to this tree");
 }

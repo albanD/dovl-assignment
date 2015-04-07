@@ -30,8 +30,71 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> label) {
     // Check
     cout << "Computation of a dual" << endl;
     float dual_value = computeDual(trees);
+    cout << "Initial Value of the dual: " << dual_value << endl;
 
-    cout << "Value of the dual: " << dual_value << endl;
+    // TRW
+    cout<< "Starting the TRW" <<endl;
+    int max_id = Ldata.width * Ldata.height;
+    bool making_progress = true;
+    while(making_progress) {
+        making_progress = false;
+        for(int curr_id = 0; curr_id < max_id; ++curr_id) {
+            vector<reference_wrapper<tree>> concerned_trees = treeLookup[curr_id];
+            vector<reference_wrapper<node>> concerned_nodes = nodeLookup[curr_id];
+            float dual_increase = 0;
+
+            // Compute the min marginals at this node for all the trees that contain it.
+            for(vector<reference_wrapper<tree>>::iterator t_iter = concerned_trees.begin(), t_end=concerned_trees.end();
+                t_iter < t_end; ++t_iter) {
+                t_iter->get().forward(curr_id);
+                t_iter->get().backward(curr_id);
+            }
+
+            // Get the value of the dual for these nodes, and sum all the unaries in a buffer
+            vector<float> unary_buffer = vector<float>(NBR_CLASSES, 0);
+            for(vector<reference_wrapper<node>>::iterator n_iter = concerned_nodes.begin(), n_end=concerned_nodes.end();
+                n_iter < n_end; ++n_iter) {
+                // could compute the min in the same pass as going
+                // over the vector to do the sum
+                dual_increase -= n_iter->get().get_min_unary();
+                int buffer_pos = 0;
+                for(vector<float>::iterator unary_iter = n_iter->get().unaries.begin(), unary_end = n_iter->get().unaries.end();
+                    unary_iter < unary_end; ++unary_iter) {
+                    unary_buffer[buffer_pos] += *unary_iter;
+                    ++buffer_pos;
+                }
+            }
+
+            // Average the min-marginals and replace in the various trees
+            int nb_trees_concerned = concerned_nodes.size();
+            for(vector<reference_wrapper<node>>::iterator n_iter = concerned_nodes.begin(), n_end=concerned_nodes.end();
+                n_iter < n_end; ++n_iter) {
+                int buffer_pos = 0;
+                for(vector<float>::iterator unary_iter = n_iter->get().unaries.begin(), unary_end = n_iter->get().unaries.end();
+                    unary_iter < unary_end; ++unary_iter) {
+                    *unary_iter = unary_buffer[buffer_pos] / nb_trees_concerned;
+                    ++buffer_pos;
+                }
+            }
+
+            // Compute the dual increase that this operation brought
+            for(vector<reference_wrapper<tree>>::iterator t_iter = concerned_trees.begin(), t_end=concerned_trees.end();
+                t_iter < t_end; ++t_iter) {
+                t_iter->get().forward(curr_id);
+                t_iter->get().backward(curr_id);
+            }
+            for(vector<reference_wrapper<node>>::iterator n_iter = concerned_nodes.begin(), n_end=concerned_nodes.end();
+                n_iter < n_end; ++n_iter) {
+                dual_increase += n_iter->get().get_min_unary();
+            }
+
+            cout<<"We increased the value of the dual by " << dual_increase <<endl;
+            if(dual_increase > 0){
+                making_progress = true;
+            }
+        }
+    }
+
 }
 
 

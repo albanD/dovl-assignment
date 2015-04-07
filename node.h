@@ -13,6 +13,7 @@ public:
 
     node(int id);
     void addUnary(float value);
+    float get_min_unary();
 };
 
 #endif

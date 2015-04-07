@@ -96,6 +96,7 @@ bool tree::proper_min_marginals() {
 
 
 float tree::get_min_marginal_for_id(int node_id) {
+    // There should be no reason but verification to use this
     for(vector<node>::iterator n_iter=nodes.begin(),n_end=nodes.end();
         n_iter<n_end; ++n_iter) {
         if (n_iter->id == node_id) {

@@ -1,6 +1,7 @@
 #ifndef IMAGECLASS_H
 #define IMAGECLASS_H
 
+#include "problemStatic.h"
 
 #include <vector>
 

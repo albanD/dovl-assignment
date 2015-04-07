@@ -19,6 +19,7 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> label) {
     vector<vector<reference_wrapper<tree>>> treeLookup;
     vector<tree> trees;
 
+    // Initialization
     generateTrees(Ldata, Rdata, trees, treeLookup, nodeLookup);
     divideUnaries(nodeLookup);
 
@@ -48,31 +49,27 @@ void generateTrees(image &Ldata, image &Rdata, vector<tree> &trees,
 
         for(j=0; j<Ldata.height; ++j) {
             int node_id = getNodeIdFromCoord(j, i, nbrCol);
-            node* tempNode = new node(node_id);
+            node tempNode = node(node_id);
             for(label=0; label<NBR_CLASSES; ++label) {
                 if(i-label > 0) {
-                    tempNode->addUnary(unary(Ldata.data[j][i], Rdata.data[j][i-label]));
+                    tempNode.addUnary(unary(Ldata.data[j][i], Rdata.data[j][i-label]));
                 } else {
-                    tempNode->addUnary(0);
+                    tempNode.addUnary(0);
                 }
             }
             if( j+1 < Ldata.height){
-                edge* tempEdge = new edge();
+                edge tempEdge = edge();
                 float edge_weight = weights(Ldata.data[j][i], Ldata.data[j+1][i]);
                 for( label=0; label<NBR_CLASSES; ++label){
-                    tempEdge->addLineWeights( weightLine(edge_weight, label));
+                    tempEdge.addLineWeights( weightLine(edge_weight, label));
                 }
-                treeEdges.push_back(*tempEdge);
+                treeEdges.push_back(tempEdge);
             }
-            treeNodes.push_back(*tempNode);
-            nodeLookup[node_id].push_back(ref(*tempNode));
+            treeNodes.push_back(tempNode);
         }
 
-        tree* col_tree = new tree(treeNodes, treeEdges);
-        for(vector<node>::iterator n_iter= treeNodes.begin(), n_end= treeNodes.end(); n_iter < n_end; ++n_iter){
-            treeLookup[n_iter->id].push_back(ref(*col_tree));
-        }
-        trees.push_back(*col_tree);
+        tree col_tree = tree(treeNodes, treeEdges);
+        trees.push_back(col_tree);
     }
 
     // generate a tree for each row
@@ -82,32 +79,40 @@ void generateTrees(image &Ldata, image &Rdata, vector<tree> &trees,
 
         for(i=0; i<Ldata.width; ++i) {
             int node_id = getNodeIdFromCoord(j, i, nbrCol);
-            node* tempNode = new node(node_id);
+            node tempNode = node(node_id);
             for(label=0; label<NBR_CLASSES; ++label) {
                 if(i-label>0){
-                    tempNode->addUnary(unary(Ldata.data[j][i], Rdata.data[j][i-label]));
+                    tempNode.addUnary(unary(Ldata.data[j][i], Rdata.data[j][i-label]));
                 } else {
-                    tempNode->addUnary(0);
+                    tempNode.addUnary(0);
                 }
             }
             if( i+1 < Ldata.width){
-                edge* tempEdge = new edge();
+                edge tempEdge = edge();
                 float edge_weight = weights(Ldata.data[j][i], Ldata.data[j][i+1]);
                 for( label=0; label<NBR_CLASSES; ++label){
-                    tempEdge->addLineWeights( weightLine(edge_weight, label));
+                    tempEdge.addLineWeights( weightLine(edge_weight, label));
                 }
-                treeEdges.push_back(*tempEdge);
+                treeEdges.push_back(tempEdge);
             }
-            treeNodes.push_back(*tempNode);
-            nodeLookup[node_id].push_back(ref(*tempNode));
+            treeNodes.push_back(tempNode);
         }
 
-        tree* row_tree = new tree(treeNodes, treeEdges);
-        for(vector<node>::iterator n_iter= treeNodes.begin(), n_end= treeNodes.end(); n_iter < n_end; ++n_iter){
-            treeLookup[n_iter->id].push_back(ref(*row_tree));
-        }
-        trees.push_back(*row_tree);
+        tree row_tree = tree(treeNodes, treeEdges);
+        trees.push_back(row_tree);
     }
+
+    for (vector<tree>::iterator tree_iter= trees.begin(), tree_end = trees.end();
+         tree_iter < tree_end; ++tree_iter) {
+        for(vector<node>::iterator node_iter = tree_iter->nodes.begin(), node_end = tree_iter->nodes.end();
+                node_iter < node_end; ++node_iter) {
+            treeLookup[node_iter->id].push_back(ref(*tree_iter));
+            nodeLookup[node_iter->id].push_back(ref(*node_iter));
+
+        }
+
+    }
+
 }
 
 

@@ -1,9 +1,11 @@
 #include "edge.h"
 
 
+edge::edge() {
+    next_line = 0;
+}
 
-edge::edge() {}
-
-void edge::addLineWeights(vector<float> weightLine) {
-    this->weights.push_back(weightLine);
+void edge::addLineWeights(array<float,NBR_CLASSES> weightLine) {
+    weights[next_line] = weightLine;
+    ++next_line;
 }

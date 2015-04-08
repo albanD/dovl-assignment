@@ -1,6 +1,7 @@
 #ifndef IMAGECLASS_H
 #define IMAGECLASS_H
 
+#include "problemStatic.h"
 
 #include <vector>
 
@@ -15,6 +16,9 @@ public:
     imageData data;
     int width;
     int height;
+
+    image();
+    image(vector<vector<int>> &input_array);
 };
 
 #endif

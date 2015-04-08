@@ -1,5 +1,7 @@
+#include "problemStatic.h"
 #include "tree.h"
 #include <limits>
+#include <array>
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
@@ -28,24 +30,28 @@ float tree::forward_backward_min_marginals(){
 
 void tree::forward(int until_nodeId) {
     int node_pos = 0;
+    int target_label, source_label;
+    float reparam_constant;
+    array<float, NBR_CLASSES> reparam_candidate;
+
     while(nodes[node_pos].id != until_nodeId) {
-        node from_node = nodes[node_pos];
-        edge linking_edge = edges[node_pos];
+        node& from_node = nodes[node_pos];
+        edge& linking_edge = edges[node_pos];
 
-        int nb_labels = from_node.unaries.size();
-
-        for(int target_label=0; target_label < nb_labels; ++target_label) {
+        for(target_label=0; target_label < NBR_CLASSES; ++target_label) {
 
             // Compute the reparametrization constant
-            float reparam_constant = numeric_limits<float>::infinity();
-            for(int source_label=0; source_label< nb_labels; ++source_label) {
-                reparam_constant = min(reparam_constant,
-                                       from_node.unaries[source_label] + linking_edge.weights[source_label][target_label]);
+            for(source_label=0; source_label< NBR_CLASSES; ++source_label) {
+                reparam_candidate[source_label] = from_node.unaries[source_label];
             }
+            for(source_label=0; source_label<NBR_CLASSES; ++source_label){
+                reparam_candidate[source_label] += linking_edge.weights[source_label][target_label];
+            }
+            reparam_constant = *min_element(reparam_candidate.begin(), reparam_candidate.end());
 
             // Reparametrize that shit!
             nodes[node_pos+1].unaries[target_label] += reparam_constant;
-            for(int source_label=0; source_label< nb_labels; ++source_label) {
+            for(source_label=0; source_label< NBR_CLASSES; ++source_label) {
                 edges[node_pos].weights[source_label][target_label] -= reparam_constant;
             }
         }
@@ -56,24 +62,27 @@ void tree::forward(int until_nodeId) {
 void tree::backward(int until_nodeId) {
     int nb_nodes = nodes.size();
     int node_pos = nb_nodes-1;
+    int target_label, source_label;
+    float reparam_constant;
+    array<float, NBR_CLASSES> reparam_candidate;
+
     while(nodes[node_pos].id != until_nodeId) {
-        node from_node = nodes[node_pos];
-        edge linking_edge = edges[node_pos-1];
+        node& from_node = nodes[node_pos];
+        edge& linking_edge = edges[node_pos-1];
 
-        int nb_labels = from_node.unaries.size();
-
-        for(int target_label=0; target_label < nb_labels; ++target_label) {
+        for(target_label=0; target_label < NBR_CLASSES; ++target_label) {
 
             // Compute the reparametrization constant
-            float reparam_constant = numeric_limits<float>::infinity();
-            for(int source_label=0; source_label< nb_labels; ++source_label) {
-                reparam_constant = min(reparam_constant,
-                                       from_node.unaries[source_label] + linking_edge.weights[target_label][source_label]);
+            for(source_label=0; source_label< NBR_CLASSES; ++source_label) {
+                reparam_candidate[source_label] = from_node.unaries[source_label];
             }
-
+            for(source_label=0; source_label<NBR_CLASSES; ++source_label){
+                reparam_candidate[source_label] += linking_edge.weights[target_label][source_label];
+            }
+            reparam_constant = *min_element(reparam_candidate.begin(), reparam_candidate.end());
             // Reparametrize that shit!
             nodes[node_pos-1].unaries[target_label] += reparam_constant;
-            for(int source_label=0; source_label< nb_labels; ++source_label) {
+            for(source_label=0; source_label< NBR_CLASSES; ++source_label) {
                 edges[node_pos-1].weights[target_label][source_label] -= reparam_constant;
             }
         }
@@ -96,6 +105,7 @@ bool tree::proper_min_marginals() {
 
 
 float tree::get_min_marginal_for_id(int node_id) {
+    // There should be no reason but verification to use this
     for(vector<node>::iterator n_iter=nodes.begin(),n_end=nodes.end();
         n_iter<n_end; ++n_iter) {
         if (n_iter->id == node_id) {

@@ -12,16 +12,8 @@ tree::tree(vector<node> nodes, vector<edge> edges) {
 }
 
 double tree::forward_backward_min_marginals(){
-    int nb_nodes = nodes.size();
-
-    // Do the forward
-    forward(nodes[nb_nodes-1].id);
     // Do the backward
     backward(nodes[0].id);
-
-    if(not proper_min_marginals()) {
-        cout << "We fucked up boyz!" <<endl;
-    }
 
     return get_min_marginal_for_id(nodes[0].id);
 }

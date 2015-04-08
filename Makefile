@@ -8,7 +8,7 @@ OBJECTS_LIB = $(SOURCES_LIB:.cpp=.o)
 
 all: CFLAGS = -c -std=c++11 -Wall -g -I.
 release: CFLAGS = -c -std=c++11 -Wall -O3 -I.
-LDFLAGS = -lstdc++
+LDFLAGS = -lstdc++ -pthread
 # we can get this with "libpng-config --ldflags" in a shell
 PNGLDFLAGS = -L/usr/lib/x86_64-linux-gnu -lpng12
 

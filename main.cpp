@@ -17,9 +17,12 @@ int main(int argc, char * argv[]) {
 
     printImage(LImageContent, "newImage.png");
 
-    vector<vector<int>> labels = vector<vector<int>>(LImageContent.width, vector<int>(LImageContent.height, NBR_CLASSES));
+    vector<vector<int>> labels = vector<vector<int>>(LImageContent.height, vector<int>(LImageContent.width, NBR_CLASSES));
 
     trw(LImageContent, RImageContent, labels);
+
+    image labelsImage = image(labels);
+    printImage(labelsImage, "labelsImage.png");
 
     return 0;
 }

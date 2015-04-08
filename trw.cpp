@@ -2,8 +2,7 @@
 #include "problemStatic.h"
 #include "tree.h"
 #include <functional>
-
-
+#include <limits>
 #include <iostream>
 
 // Functions declaration
@@ -13,8 +12,11 @@ void generateTrees(image &Ldata, image &Rdata, vector<tree> &trees,
                    vector<vector<reference_wrapper<node>>> &nodeLookup);
 void divideUnaries(vector<vector<reference_wrapper<node>>> &nodeLookup);
 float computeDual( vector<tree> &trees);
+void projection(vector<vector<reference_wrapper<tree>>> &treeLookup,
+                vector<vector<reference_wrapper<node>>> &nodeLookup,
+                vector<vector<int>> &label);
 
-void trw(image &Ldata, image &Rdata, vector<vector<int>> label) {
+void trw(image &Ldata, image &Rdata, vector<vector<int>> &label) {
     // label should be initialized with the same size as data.
 
     vector<vector<reference_wrapper<node>>> nodeLookup;
@@ -32,6 +34,9 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> label) {
     float dual_value = computeDual(trees);
 
     cout << "Value of the dual: " << dual_value << endl;
+
+    cout << "Do the projection to get the labels" << endl;
+    projection(treeLookup, nodeLookup, label);
 }
 
 
@@ -151,4 +156,63 @@ float computeDual(vector<tree> &trees) {
     }
 
     return dual_value;
+}
+
+
+void projection(vector<vector<reference_wrapper<tree>>> &treeLookup,
+                vector<vector<reference_wrapper<node>>> &nodeLookup,
+                vector<vector<int>> &label) {
+    int i, source_label, selected_label, best_nbr;
+
+    // Loop over all nodes starting from the end
+    int nbr_node = treeLookup.size();
+    for(int nodeId=0; nodeId<nbr_node; ++nodeId) {
+        cout<<"\rCurrent Node: "<<(nodeId+1)<<"/"<<nbr_node<<flush;
+        vector<reference_wrapper<tree>> &tree_containing_node = treeLookup[nodeId];
+        vector<reference_wrapper<node>> &node_ref = nodeLookup[nodeId];
+        // All the desired labels for this node
+        vector<int> desired_labels = vector<int>(NBR_CLASSES, 0);
+        for(i=0; i<(int)tree_containing_node.size(); ++i) {
+            tree &working_tree = tree_containing_node[i];
+            node &working_node = node_ref[i];
+            // Do the forward/backward
+            working_tree.forward(nodeId);
+            working_tree.backward(nodeId);
+            // We know that this node is the last one, no need for backward to get its min marginals
+            // Find the best prediction
+            float min_score = numeric_limits<float>::infinity();
+            selected_label = -1;
+            for(source_label=0; source_label<NBR_CLASSES; ++source_label) {
+                if(working_node.unaries[source_label]<min_score) {
+                    min_score = working_node.unaries[source_label];
+                    selected_label = source_label;
+                }
+            }
+            ++desired_labels[selected_label];
+        }
+
+        // Get the most wanted label for this node
+        selected_label = 0;
+        best_nbr = 0;
+        for(i=0; i<NBR_CLASSES; ++i) {
+            if(desired_labels[i] > best_nbr) {
+                selected_label = i;
+                best_nbr = desired_labels[i];
+            }
+        }
+
+        // Set the selected label on the output
+        label[nodeId/label[0].size()][nodeId%label[0].size()] = selected_label;
+
+        // Update the trees to force the current node to take label selected_label in all trees
+        for(i=0; i<(int)tree_containing_node.size(); ++i) {
+            node &working_node = node_ref[i];
+            for(source_label=0; source_label<NBR_CLASSES; ++source_label) {
+                if(source_label!=selected_label) {
+                    working_node.unaries[source_label] = numeric_limits<float>::infinity();
+                }
+            }
+        }
+    }
+    cout<<endl;
 }

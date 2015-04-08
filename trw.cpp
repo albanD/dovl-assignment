@@ -202,7 +202,7 @@ void projection(vector<vector<reference_wrapper<tree>>> &treeLookup,
         }
 
         // Set the selected label on the output
-        label[nodeId%label.size()][nodeId/label.size()] = selected_label;
+        label[nodeId/label[0].size()][nodeId%label[0].size()] = selected_label;
 
         // Update the trees to force the current node to take label selected_label in all trees
         for(i=0; i<(int)tree_containing_node.size(); ++i) {

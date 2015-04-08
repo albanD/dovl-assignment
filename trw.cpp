@@ -37,8 +37,8 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> &label) {
     // TRW
     cout<< "Starting the TRW" <<endl;
     int max_id = Ldata.width * Ldata.height;
-    float improvement = 1001;
-    while(improvement > 1000) {
+    float improvement = 101;
+    while(improvement > 100) {
         float old_dual_value = dual_value;
         improvement = 0;
         for(int curr_id = 0; curr_id < max_id; ++curr_id) {
@@ -228,6 +228,10 @@ void projection(vector<vector<reference_wrapper<tree>>> &treeLookup,
                 vector<vector<reference_wrapper<node>>> &nodeLookup,
                 vector<vector<int>> &label) {
     int i, source_label, selected_label, best_nbr;
+    int height = label.size();
+    int width = label[0].size();
+
+
 
     // Loop over all nodes starting from the end
     int nbr_node = treeLookup.size();
@@ -267,7 +271,7 @@ void projection(vector<vector<reference_wrapper<tree>>> &treeLookup,
         }
 
         // Set the selected label on the output
-        label[nodeId%label.size()][nodeId/label.size()] = selected_label;
+        label[nodeId/width][nodeId%width] = selected_label;
 
         // Update the trees to force the current node to take label selected_label in all trees
         for(i=0; i<(int)tree_containing_node.size(); ++i) {

@@ -11,7 +11,7 @@ void generateTrees(image &Ldata, image &Rdata, vector<tree> &trees,
                    vector<vector<reference_wrapper<tree>>> &treeLookup,
                    vector<vector<reference_wrapper<node>>> &nodeLookup);
 void divideUnaries(vector<vector<reference_wrapper<node>>> &nodeLookup);
-float computeDual( vector<tree> &trees);
+double computeDual( vector<tree> &trees);
 void projection(vector<vector<reference_wrapper<tree>>> &treeLookup,
                 vector<vector<reference_wrapper<node>>> &nodeLookup,
                 vector<vector<int>> &label);
@@ -31,20 +31,20 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> &label) {
 
     // Check
     cout << "Computation of a dual" << endl;
-    float dual_value = computeDual(trees);
+    double dual_value = computeDual(trees);
     cout << "Initial Value of the dual: " << dual_value << endl;
 
     // TRW
     cout<< "Starting the TRW" <<endl;
     int max_id = Ldata.width * Ldata.height;
-    float improvement = 101;
-    while(improvement > 100) {
-        float old_dual_value = dual_value;
+    double improvement = 1;
+    while(improvement > 0) {
+        double old_dual_value = dual_value;
         improvement = 0;
         for(int curr_id = 0; curr_id < max_id; ++curr_id) {
             vector<reference_wrapper<tree>> concerned_trees = treeLookup[curr_id];
             vector<reference_wrapper<node>> concerned_nodes = nodeLookup[curr_id];
-            float dual_increase = 0;
+            double dual_increase = 0;
 
             // Compute the min marginals at this node for all the trees that contain it.
             for(vector<reference_wrapper<tree>>::iterator t_iter = concerned_trees.begin(), t_end=concerned_trees.end();
@@ -54,14 +54,14 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> &label) {
             }
 
             // Get the value of the dual for these nodes, and sum all the unaries in a buffer
-            array<float,NBR_CLASSES> unary_buffer={};
+            array<double,NBR_CLASSES> unary_buffer={};
             for(vector<reference_wrapper<node>>::iterator n_iter = concerned_nodes.begin(), n_end=concerned_nodes.end();
                 n_iter < n_end; ++n_iter) {
                 // could compute the min in the same pass as going
                 // over the vector to do the sum
                 dual_increase -= n_iter->get().get_min_unary();
                 int buffer_pos = 0;
-                for(array<float,NBR_CLASSES>::iterator unary_iter = n_iter->get().unaries.begin(), unary_end = n_iter->get().unaries.end();
+                for(array<double,NBR_CLASSES>::iterator unary_iter = n_iter->get().unaries.begin(), unary_end = n_iter->get().unaries.end();
                     unary_iter < unary_end; ++unary_iter) {
                     unary_buffer[buffer_pos] += *unary_iter;
                     ++buffer_pos;
@@ -73,7 +73,7 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> &label) {
             for(vector<reference_wrapper<node>>::iterator n_iter = concerned_nodes.begin(), n_end=concerned_nodes.end();
                 n_iter < n_end; ++n_iter) {
                 int buffer_pos = 0;
-                for(array<float,NBR_CLASSES>::iterator unary_iter = n_iter->get().unaries.begin(), unary_end = n_iter->get().unaries.end();
+                for(array<double,NBR_CLASSES>::iterator unary_iter = n_iter->get().unaries.begin(), unary_end = n_iter->get().unaries.end();
                     unary_iter < unary_end; ++unary_iter) {
                     *unary_iter = unary_buffer[buffer_pos] / nb_trees_concerned;
                     ++buffer_pos;
@@ -138,7 +138,7 @@ void generateTrees(image &Ldata, image &Rdata, vector<tree> &trees,
             }
             if( j+1 < Ldata.height){
                 edge tempEdge = edge();
-                float edge_weight = weights(Ldata.data[j][i], Ldata.data[j+1][i]);
+                double edge_weight = weights(Ldata.data[j][i], Ldata.data[j+1][i]);
                 for( label=0; label<NBR_CLASSES; ++label){
                     tempEdge.addLineWeights( weightLine(edge_weight, label));
                 }
@@ -168,7 +168,7 @@ void generateTrees(image &Ldata, image &Rdata, vector<tree> &trees,
             }
             if( i+1 < Ldata.width){
                 edge tempEdge = edge();
-                float edge_weight = weights(Ldata.data[j][i], Ldata.data[j][i+1]);
+                double edge_weight = weights(Ldata.data[j][i], Ldata.data[j][i+1]);
                 for( label=0; label<NBR_CLASSES; ++label){
                     tempEdge.addLineWeights( weightLine(edge_weight, label));
                 }
@@ -202,7 +202,7 @@ void divideUnaries(vector<vector<reference_wrapper<node>>> &nodeLookup) {
         for(vector<reference_wrapper<node>>::iterator node_iter= node_instances.begin(),
                  node_end = node_instances.end(); node_iter < node_end; ++node_iter) {
             node node_inst = *node_iter;
-            for(array<float, NBR_CLASSES>::iterator unary_value= node_inst.unaries.begin(), unary_end = node_inst.unaries.end();
+            for(array<double, NBR_CLASSES>::iterator unary_value= node_inst.unaries.begin(), unary_end = node_inst.unaries.end();
                 unary_value < unary_end; ++unary_value) {
                 *unary_value = *unary_value / nb_instance_node;
             }
@@ -211,9 +211,9 @@ void divideUnaries(vector<vector<reference_wrapper<node>>> &nodeLookup) {
 }
 
 
-float computeDual(vector<tree> &trees) {
+double computeDual(vector<tree> &trees) {
 
-    float dual_value = 0;
+    double dual_value = 0;
 
     for (vector<tree>::iterator tree_iter= trees.begin(), tree_end = trees.end();
          tree_iter<tree_end; ++tree_iter) {
@@ -228,7 +228,6 @@ void projection(vector<vector<reference_wrapper<tree>>> &treeLookup,
                 vector<vector<reference_wrapper<node>>> &nodeLookup,
                 vector<vector<int>> &label) {
     int i, source_label, selected_label, best_nbr;
-    int height = label.size();
     int width = label[0].size();
 
 
@@ -249,7 +248,7 @@ void projection(vector<vector<reference_wrapper<tree>>> &treeLookup,
             working_tree.backward(nodeId);
             // We know that this node is the last one, no need for backward to get its min marginals
             // Find the best prediction
-            float min_score = numeric_limits<float>::infinity();
+            double min_score = numeric_limits<double>::infinity();
             selected_label = -1;
             for(source_label=0; source_label<NBR_CLASSES; ++source_label) {
                 if(working_node.unaries[source_label]<min_score) {
@@ -278,7 +277,7 @@ void projection(vector<vector<reference_wrapper<tree>>> &treeLookup,
             node &working_node = node_ref[i];
             for(source_label=0; source_label<NBR_CLASSES; ++source_label) {
                 if(source_label!=selected_label) {
-                    working_node.unaries[source_label] = numeric_limits<float>::infinity();
+                    working_node.unaries[source_label] = numeric_limits<double>::infinity();
                 }
             }
         }

@@ -10,11 +10,11 @@ using namespace std;
 class edge {
 
 public:
-    array<array<float,NBR_CLASSES>, NBR_CLASSES> weights;
+    array<array<double,NBR_CLASSES>, NBR_CLASSES> weights;
     // Use the coordinates in the same order as the Nodes in the corresponding vector of unaries.
     int next_line;
 
     edge();
-    void addLineWeights(array<float, NBR_CLASSES> weightLine);
+    void addLineWeights(array<double, NBR_CLASSES> weightLine);
 };
 #endif

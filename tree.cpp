@@ -11,7 +11,7 @@ tree::tree(vector<node> nodes, vector<edge> edges) {
     this->edges = edges;
 }
 
-float tree::forward_backward_min_marginals(){
+double tree::forward_backward_min_marginals(){
     int nb_nodes = nodes.size();
 
     // Do the forward
@@ -31,8 +31,8 @@ float tree::forward_backward_min_marginals(){
 void tree::forward(int until_nodeId) {
     int node_pos = 0;
     int target_label, source_label;
-    float reparam_constant;
-    array<float, NBR_CLASSES> reparam_candidate;
+    double reparam_constant;
+    array<double, NBR_CLASSES> reparam_candidate;
 
     while(nodes[node_pos].id != until_nodeId) {
         node& from_node = nodes[node_pos];
@@ -63,8 +63,8 @@ void tree::backward(int until_nodeId) {
     int nb_nodes = nodes.size();
     int node_pos = nb_nodes-1;
     int target_label, source_label;
-    float reparam_constant;
-    array<float, NBR_CLASSES> reparam_candidate;
+    double reparam_constant;
+    array<double, NBR_CLASSES> reparam_candidate;
 
     while(nodes[node_pos].id != until_nodeId) {
         node& from_node = nodes[node_pos];
@@ -93,9 +93,9 @@ void tree::backward(int until_nodeId) {
 bool tree::proper_min_marginals() {
     // Verify that all the unary are in min-marginal condition
     int nb_nodes = nodes.size();
-    float dual_value = *min_element(nodes[0].unaries.begin(), nodes[0].unaries.end());
+    double dual_value = *min_element(nodes[0].unaries.begin(), nodes[0].unaries.end());
     for(int node = 1; node<nb_nodes; ++node){
-        float new_dual_value = *min_element(nodes[node].unaries.begin(), nodes[node].unaries.end());
+        double new_dual_value = *min_element(nodes[node].unaries.begin(), nodes[node].unaries.end());
         if(fabs(new_dual_value - dual_value) > 1e-3) {
             return false;
         }
@@ -104,7 +104,7 @@ bool tree::proper_min_marginals() {
 }
 
 
-float tree::get_min_marginal_for_id(int node_id) {
+double tree::get_min_marginal_for_id(int node_id) {
     // There should be no reason but verification to use this
     for(vector<node>::iterator n_iter=nodes.begin(),n_end=nodes.end();
         n_iter<n_end; ++n_iter) {

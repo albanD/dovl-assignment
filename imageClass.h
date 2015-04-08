@@ -7,7 +7,7 @@
 
 using namespace std;
 
-typedef vector<float> imageRow;
+typedef vector<double> imageRow;
 typedef vector<imageRow> imageData;
 
 class image {

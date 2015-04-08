@@ -21,10 +21,10 @@ void getImage(image &myImage, string fileName) {
         imageRow tempRow = imageRow();
         for(int x=0; x<myImage.width; ++x)
         {
-            float grayScaleValue = 0;
-            grayScaleValue += 0.21*(float)image[y][x].red;
-            grayScaleValue += 0.72*(float)image[y][x].green;
-            grayScaleValue += 0.07* (float)image[y][x].blue;
+            double grayScaleValue = 0;
+            grayScaleValue += 0.21*(double)image[y][x].red;
+            grayScaleValue += 0.72*(double)image[y][x].green;
+            grayScaleValue += 0.07* (double)image[y][x].blue;
             tempRow.push_back(grayScaleValue);
         }
         myImage.data.push_back(tempRow);

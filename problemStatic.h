@@ -11,10 +11,10 @@
 
 using namespace std;
 
-float unary(float pixel_value_x, float pixel_value_y);
-float binary(int label1, int label2);
-float weights(float pixel_value_1, float pixel_value_2);
+double unary(double pixel_value_x, double pixel_value_y);
+double binary(int label1, int label2);
+double weights(double pixel_value_1, double pixel_value_2);
 int getNodeIdFromCoord(int i, int j, int nbrCol);
-array<float,NBR_CLASSES> weightLine(float edge_weight, int first_label);
+array<double,NBR_CLASSES> weightLine(double edge_weight, int first_label);
 
 #endif

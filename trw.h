@@ -11,6 +11,7 @@
 
 using namespace std;
 
-void trw(image &Ldata, image &Rdata, vector<vector<int>> &label);
+void trw(image &Ldata, image &Rdata, vector<vector<int>> &label,
+         vector<float> &dual_values, vector<float> &primal_values);
 
 #endif

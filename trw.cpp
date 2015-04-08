@@ -15,13 +15,16 @@ void generateLookupTables(int width, int height, vector<tree> &trees,
                    vector<vector<reference_wrapper<tree>>> &treeLookup,
                    vector<vector<reference_wrapper<node>>> &nodeLookup);
 void divideUnaries(vector<vector<reference_wrapper<node>>> &nodeLookup);
+
+double computePrimal(image &Ldata, image &Rdata, vector<vector<int>> label);
 double computeDual( vector<tree> &trees);
 void projection(vector<vector<reference_wrapper<tree>>> &treeLookup,
                 vector<vector<reference_wrapper<node>>> &nodeLookup,
                 vector<vector<int>> &label);
 void infiniteWorker(Queue<tuple<int,int,vector<tree>>> &workQueue);
 
-void trw(image &Ldata, image &Rdata, vector<vector<int>> &label) {
+void trw(image &Ldata, image &Rdata, vector<vector<int>> &label,
+         vector<float> &dual_values, vector<float> &primal_values) {
     // label should be initialized with the same size as data.
 
     // main storage and lookup
@@ -109,6 +112,8 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> &label) {
             improvement += dual_increase;
         }
         dual_value = computeDual(trees);
+        dual_values.push_back(dual_value);
+        primal_values.push_back(0); //TODO
         cout << "Augmented the global dual by "<< dual_value - old_dual_value
              <<", incremental improvement report "<< improvement<< endl;
  
@@ -126,6 +131,8 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> &label) {
 
     cout << "Do the projection to get the final labels" << endl;
     projection(treeLookup, nodeLookup, label);
+    double primal_val = computePrimal( Ldata, Rdata, label);
+    cout << "Value of the primal: "<< primal_val <<endl;
 }
 
 void infiniteWorker(Queue<tuple<int,int,vector<tree>>> &workQueue) {
@@ -276,6 +283,41 @@ double computeDual(vector<tree> &trees) {
     }
 
     return dual_value;
+}
+
+double computePrimal(image &Ldata, image &Rdata, vector<vector<int>> labels){
+    int height = labels.size();
+    int width = labels[0].size();
+
+    double edge_weight, binary_cost;
+    double primal_value = 0;
+
+    // Unary terms
+    for(int row = 0; row< height; ++row){
+        for(int col = 0; col < width; ++col){
+            if(col - labels[row][col] >= 0){
+                primal_value += fabs( Ldata.data[row][col] - Rdata.data[row][col - labels[row][col]]);
+            }
+        }
+    }
+
+    // Vertical binary terms
+    for(int col=0; col<width; ++col){
+        for(int row=0; row<height-1; ++row){
+            edge_weight = weights(Ldata.data[row][col], Ldata.data[row+1][col]);
+            binary_cost = binary(labels[row][col], labels[row+1][col]);
+            primal_value += LAMBDA * edge_weight * binary_cost;
+        }
+    }
+    // Horizontal binary terms
+    for(int row=0; row<height; ++row){
+        for(int col=0; col<width-1; ++col){
+            edge_weight = weights(Ldata.data[row][col], Ldata.data[row][col+1]);
+            binary_cost = binary(labels[row][col], labels[row][col+1]);
+            primal_value += LAMBDA * edge_weight * binary_cost;
+        }
+    }
+    return primal_value;
 }
 
 

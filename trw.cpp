@@ -37,11 +37,10 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> &label) {
     // TRW
     cout<< "Starting the TRW" <<endl;
     int max_id = Ldata.width * Ldata.height;
-    bool making_progress = true;
-    while(making_progress) {
+    float improvement = 1001;
+    while(improvement > 1000) {
         float old_dual_value = dual_value;
-        float improvement = 0;
-        making_progress = false;
+        improvement = 0;
         for(int curr_id = 0; curr_id < max_id; ++curr_id) {
             vector<reference_wrapper<tree>> concerned_trees = treeLookup[curr_id];
             vector<reference_wrapper<node>> concerned_nodes = nodeLookup[curr_id];
@@ -55,14 +54,14 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> &label) {
             }
 
             // Get the value of the dual for these nodes, and sum all the unaries in a buffer
-            vector<float> unary_buffer = vector<float>(NBR_CLASSES, 0);
+            array<float,NBR_CLASSES> unary_buffer={};
             for(vector<reference_wrapper<node>>::iterator n_iter = concerned_nodes.begin(), n_end=concerned_nodes.end();
                 n_iter < n_end; ++n_iter) {
                 // could compute the min in the same pass as going
                 // over the vector to do the sum
                 dual_increase -= n_iter->get().get_min_unary();
                 int buffer_pos = 0;
-                for(vector<float>::iterator unary_iter = n_iter->get().unaries.begin(), unary_end = n_iter->get().unaries.end();
+                for(array<float,NBR_CLASSES>::iterator unary_iter = n_iter->get().unaries.begin(), unary_end = n_iter->get().unaries.end();
                     unary_iter < unary_end; ++unary_iter) {
                     unary_buffer[buffer_pos] += *unary_iter;
                     ++buffer_pos;
@@ -74,7 +73,7 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> &label) {
             for(vector<reference_wrapper<node>>::iterator n_iter = concerned_nodes.begin(), n_end=concerned_nodes.end();
                 n_iter < n_end; ++n_iter) {
                 int buffer_pos = 0;
-                for(vector<float>::iterator unary_iter = n_iter->get().unaries.begin(), unary_end = n_iter->get().unaries.end();
+                for(array<float,NBR_CLASSES>::iterator unary_iter = n_iter->get().unaries.begin(), unary_end = n_iter->get().unaries.end();
                     unary_iter < unary_end; ++unary_iter) {
                     *unary_iter = unary_buffer[buffer_pos] / nb_trees_concerned;
                     ++buffer_pos;
@@ -92,9 +91,6 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> &label) {
                 dual_increase += n_iter->get().get_min_unary();
             }
 
-            if(dual_increase > 0){
-                making_progress = true;
-            }
             improvement += dual_increase;
         }
         dual_value = computeDual(trees);
@@ -106,7 +102,6 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> &label) {
 
     cout << "Do the projection to get the labels" << endl;
     projection(treeLookup, nodeLookup, label);
-
 }
 
 
@@ -207,7 +202,7 @@ void divideUnaries(vector<vector<reference_wrapper<node>>> &nodeLookup) {
         for(vector<reference_wrapper<node>>::iterator node_iter= node_instances.begin(),
                  node_end = node_instances.end(); node_iter < node_end; ++node_iter) {
             node node_inst = *node_iter;
-            for(vector<float>::iterator unary_value= node_inst.unaries.begin(), unary_end = node_inst.unaries.end();
+            for(array<float, NBR_CLASSES>::iterator unary_value= node_inst.unaries.begin(), unary_end = node_inst.unaries.end();
                 unary_value < unary_end; ++unary_value) {
                 *unary_value = *unary_value / nb_instance_node;
             }

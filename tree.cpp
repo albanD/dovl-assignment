@@ -9,6 +9,8 @@
 tree::tree(vector<node> nodes, vector<edge> edges) {
     this->nodes = nodes;
     this->edges = edges;
+    this->correct_up_to = 0;
+    this->correct_back_to = nodes.size()-1;
 }
 
 double tree::forward_backward_min_marginals(){
@@ -24,9 +26,13 @@ void tree::forward(int until_nodeId) {
     int node_pos = 0;
     int target_label, source_label;
     double reparam_constant;
-    array<double, NBR_CLASSES> reparam_candidate;
+    array<double, NBR_CLASSES> reparam_candidate = array<double, NBR_CLASSES>();
 
     while(nodes[node_pos].id != until_nodeId) {
+        if(node_pos < this->correct_up_to) {
+            ++node_pos;
+            continue;
+        }
         node& from_node = nodes[node_pos];
         edge& linking_edge = edges[node_pos];
 
@@ -49,16 +55,23 @@ void tree::forward(int until_nodeId) {
         }
         ++node_pos;
     }
+
+    this->correct_up_to = max(0,node_pos-1);
+    this->correct_back_to = max(this->correct_back_to, correct_up_to);
 }
 
 void tree::backward(int until_nodeId) {
-    int nb_nodes = nodes.size();
-    int node_pos = nb_nodes-1;
+    int last_nodeId = this->nodes.size()-1;
+    int node_pos = last_nodeId;
     int target_label, source_label;
     double reparam_constant;
-    array<double, NBR_CLASSES> reparam_candidate;
+    array<double, NBR_CLASSES> reparam_candidate = array<double, NBR_CLASSES>();
 
     while(nodes[node_pos].id != until_nodeId) {
+        if(node_pos > this->correct_back_to) {
+            --node_pos;
+            continue;
+        }
         node& from_node = nodes[node_pos];
         edge& linking_edge = edges[node_pos-1];
 
@@ -80,6 +93,9 @@ void tree::backward(int until_nodeId) {
         }
         --node_pos;
     }
+
+    this->correct_back_to = min(last_nodeId, node_pos + 1);
+    this->correct_up_to = min(this->correct_back_to, correct_up_to);
 }
 
 bool tree::proper_min_marginals() {

@@ -11,6 +11,8 @@ class tree {
 public:
     vector<node> nodes;
     vector<edge> edges;
+    int correct_up_to;
+    int correct_back_to;
 
     tree(vector<node> nodes, vector<edge> edges);
     double forward_backward_min_marginals();

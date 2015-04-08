@@ -18,8 +18,9 @@ int main(int argc, char * argv[]) {
     printImage(LImageContent, "newImage.png");
 
     vector<vector<int>> labels = vector<vector<int>>(LImageContent.height, vector<int>(LImageContent.width, NBR_CLASSES));
-
-    trw(LImageContent, RImageContent, labels);
+    vector<float> dual_values;
+    vector<float> primal_values;
+    trw(LImageContent, RImageContent, labels, dual_values, primal_values);
 
     image labelsImage = image(labels);
     printImage(labelsImage, "labelsImage.png");

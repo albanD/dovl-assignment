@@ -27,51 +27,27 @@
 
 
 \section{Principle}
-The assignment consisted in solving a multi-label MRF problem. In order to solve it, we are going to use the TRW-S algorithm.
+The assignment consisted in solving a multi-label MRF problem. In order to solve it, we are going to use the TRW-S algorithm. Our problem is reducible to minimizing an energy on a graph.\\
 
-The edges of this graph correspond to the edges of the general graph between considered nodes, with the same weights. The unary potential consist in the unary potential of the considered nodes, but also the pairwise cost from nodes that we are not considering to nodes that we are considering.
+Each node of this graph consists in a pixel. The unary potential that we have for each pixels correspond to the difference in intensity between the pixel in the left image and the pixel in the right image that our labels makes it correspond to. The weights in the edge enforce a smoothness in the label attribution: neighboring pixels should have similar labels, except if they belong ot different objects.
 
- We are going to split the graph on which we are minimizing the energy.
+
+Energy minimization on a graph like this that contains loop is not efficiently doable. We are going to split the graph on which we are minimizing the energy in several trees in order to be able to efficiently minimize. This represents a dual of our problem, that we can solve approximately.
 
 \section{Results}
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.6\textwidth]{init}
-  \caption{Random Initialization}
-  \label{fig:randominit}
+  \includegraphics[width=0.6\textwidth]{labelsImage}
+  \caption{Labels obtained in the end}
+  \label{fig:labels}
 \end{figure}
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.6\textwidth]{unaryinit}
-  \caption{Minimum of the Unary Initialization}
-  \label{fig:unaryinit}
+  \includegraphics[width=0.6\textwidth]{evolution}
+  \caption{Evolution of the primal and dual}
+  \label{fig:evolution}
 \end{figure}
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.6\textwidth]{unarysmoothinit}
-  \caption{Minimum of the Unary Initialization Smoothed}
-  \label{fig:unarysmoothinit}
-\end{figure}
-
-
-The evolution of the energy during the optimization of the disparity map, starting from a random initialization is represented in Figure \ref{fig:energy}. We achieve a final energy of $1.3 \times 10^6$. We can see that the optimization mainly takes place in the first 300 iterations, the rest being a plateau where either no swap can be done, or the improvement is very small. The resulting disparity map is shown in Figure \ref{fig:final-result}.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.6\textwidth]{energy}
-  \caption{Evolution of the Energy as a function on iteration}
-  \label{fig:energy}
-\end{figure}
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.6\textwidth]{final-result}
-  \caption{Obtained Disparity Map}
-  \label{fig:final-result}
-\end{figure}
-
 
 \end{document}

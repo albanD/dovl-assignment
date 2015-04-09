@@ -265,12 +265,11 @@ void generateLookupTables(int width, int height, vector<tree> &trees,
 
 void divideUnaries(vector<vector<reference_wrapper<node>>> &nodeLookup) {
     for(int i=0, nb_nodes =nodeLookup.size(); i<nb_nodes; ++i) {
-        vector<reference_wrapper<node>> node_instances = nodeLookup[i];
+        vector<reference_wrapper<node>>& node_instances = nodeLookup[i];
         int nb_instance_node = node_instances.size();
         for(vector<reference_wrapper<node>>::iterator node_iter= node_instances.begin(),
                  node_end = node_instances.end(); node_iter < node_end; ++node_iter) {
-            node node_inst = *node_iter;
-            for(array<double, NBR_CLASSES>::iterator unary_value= node_inst.unaries.begin(), unary_end = node_inst.unaries.end();
+            for(array<double, NBR_CLASSES>::iterator unary_value= node_iter->get().unaries.begin(), unary_end = node_iter->get().unaries.end();
                 unary_value < unary_end; ++unary_value) {
                 *unary_value = *unary_value / nb_instance_node;
             }
@@ -302,7 +301,7 @@ double computePrimal(image &Ldata, image &Rdata, vector<vector<int>> labels){
     for(int row = 0; row< height; ++row){
         for(int col = 0; col < width; ++col){
             if(col - labels[row][col] >= 0){
-                primal_value += fabs( Ldata.data[row][col] - Rdata.data[row][col - labels[row][col]]);
+                primal_value += unary(Ldata.data[row][col], Rdata.data[row][col - labels[row][col]]);
             }
         }
     }

@@ -2,3 +2,5 @@
 run_dovl
 newImage.png
 labelsImage.png
+*.dat
+*.eps

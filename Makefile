@@ -28,5 +28,5 @@ clean:
 cl:
 	-rm $(OBJECTS_LIB)
 
-test:
-	-./run_dovl
+results: $(TARGET)
+	-./run_dovl && gnuplot plot.gp

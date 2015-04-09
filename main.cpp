@@ -2,13 +2,14 @@
 #include "imageClass.h"
 #include "problemStatic.h"
 #include "trw.h"
-
+#include <fstream>
+#include <sstream>
 
 int main(int argc, char * argv[]) {
 
     image LImageContent;
     image RImageContent;
-    
+
     getImage(LImageContent, "imL.png");
     getImage(RImageContent, "imR.png");
 
@@ -24,6 +25,17 @@ int main(int argc, char * argv[]) {
 
     image labelsImage = image(labels);
     printImage(labelsImage, "labelsImage.png");
+
+    ofstream outfile("evolution.dat");
+    int nb_points = dual_values.size();
+    outfile<<"#Dual \t Primal"<<endl;
+    for(int i=0; i< nb_points; ++i) {
+        outfile<<dual_values[i]<<"\t"
+               <<primal_values[i]<<endl;
+    }
+
+
+
 
     return 0;
 }

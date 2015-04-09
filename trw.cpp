@@ -60,7 +60,7 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> &label,
     cout<< "Starting the TRW" <<endl;
     int max_id = Ldata.width * Ldata.height;
     double improvement = 1;
-    while(improvement > 0) {
+    while(improvement > 0.1) {
         double old_dual_value = dual_value;
         improvement = 0;
         for(int curr_id = 0; curr_id < max_id; ++curr_id) {

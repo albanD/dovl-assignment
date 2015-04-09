@@ -1,0 +1,77 @@
+\documentclass [11pt]{article}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{url}
+\usepackage{amsthm}
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{pdfpages}
+
+
+\title{Stereo matching with the TRW-S Algorithm}
+\author{Desmaison Alban \and Bunel Rudy}
+\author{
+  Desmaison, Alban\\
+  \texttt{alban.desmaison@student.ecp.fr}
+  \and
+  Bunel Rudy\\
+  \texttt{rbunel@ens-cachan.fr}
+}
+
+\begin{document}
+\maketitle
+
+
+\section{Principle}
+The assignment consisted in solving a multi-label MRF problem. In order to solve it, we are going to use the TRW-S algorithm.
+
+The edges of this graph correspond to the edges of the general graph between considered nodes, with the same weights. The unary potential consist in the unary potential of the considered nodes, but also the pairwise cost from nodes that we are not considering to nodes that we are considering.
+
+ We are going to split the graph on which we are minimizing the energy.
+
+\section{Results}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{init}
+  \caption{Random Initialization}
+  \label{fig:randominit}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{unaryinit}
+  \caption{Minimum of the Unary Initialization}
+  \label{fig:unaryinit}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{unarysmoothinit}
+  \caption{Minimum of the Unary Initialization Smoothed}
+  \label{fig:unarysmoothinit}
+\end{figure}
+
+
+The evolution of the energy during the optimization of the disparity map, starting from a random initialization is represented in Figure \ref{fig:energy}. We achieve a final energy of $1.3 \times 10^6$. We can see that the optimization mainly takes place in the first 300 iterations, the rest being a plateau where either no swap can be done, or the improvement is very small. The resulting disparity map is shown in Figure \ref{fig:final-result}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{energy}
+  \caption{Evolution of the Energy as a function on iteration}
+  \label{fig:energy}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{final-result}
+  \caption{Obtained Disparity Map}
+  \label{fig:final-result}
+\end{figure}
+
+
+\end{document}

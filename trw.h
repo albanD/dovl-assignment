@@ -5,6 +5,7 @@
 #include <array>
 
 #include "imageClass.h"
+#include "ioUtils.h"
 #include "node.h"
 #include "tree.h"
 

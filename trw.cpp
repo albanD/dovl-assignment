@@ -1,13 +1,17 @@
 #include "trw.h"
 #include "problemStatic.h"
 #include "tree.h"
+#include "threadQueue.h"
 #include <functional>
 #include <limits>
 #include <iostream>
+#include <tuple>
+#include <thread>
 
 // Functions declaration
 
-void generateTrees(image &Ldata, image &Rdata, vector<tree> &trees,
+void generateTreeList(image &Ldata, image &Rdata, vector<tree> &trees);
+void generateLookupTables(int width, int height, vector<tree> &trees,
                    vector<vector<reference_wrapper<tree>>> &treeLookup,
                    vector<vector<reference_wrapper<node>>> &nodeLookup);
 void divideUnaries(vector<vector<reference_wrapper<node>>> &nodeLookup);
@@ -17,18 +21,27 @@ double computeDual( vector<tree> &trees);
 void projection(vector<vector<reference_wrapper<tree>>> &treeLookup,
                 vector<vector<reference_wrapper<node>>> &nodeLookup,
                 vector<vector<int>> &label);
+void infiniteWorker(Queue<vector<tree>> &workQueue,
+                    image &Ldata, image &Rdata,
+                    vector<float> &primal_values);
 
 void trw(image &Ldata, image &Rdata, vector<vector<int>> &label,
          vector<float> &dual_values, vector<float> &primal_values) {
     // label should be initialized with the same size as data.
 
+    // main storage and lookup
     vector<vector<reference_wrapper<node>>> nodeLookup;
     vector<vector<reference_wrapper<tree>>> treeLookup;
     vector<tree> trees;
+    // temp storage and lookup for primal value estimation
+    vector<vector<reference_wrapper<node>>> tempNodeLookup;
+    vector<vector<reference_wrapper<tree>>> tempTreeLookup;
+    vector<tree> tempTrees;
 
     // Initialization
     cout<<"Generating the trees"<<endl;
-    generateTrees(Ldata, Rdata, trees, treeLookup, nodeLookup);
+    generateTreeList(Ldata, Rdata, trees);
+    generateLookupTables(Ldata.width, Ldata.height, trees, treeLookup, nodeLookup);
     cout<<"Dividing the unaries"<<endl;
     divideUnaries(nodeLookup);
 
@@ -36,6 +49,12 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> &label,
     cout << "Computation of a dual" << endl;
     double dual_value = computeDual(trees);
     cout << "Initial Value of the dual: " << dual_value << endl;
+
+    // Threading initialization
+    Queue<vector<tree>> workQueue;
+    thread worker(bind(infiniteWorker, ref(workQueue),
+                        ref(Ldata), ref(Rdata),
+                        ref(primal_values)));
 
     // TRW
     cout<< "Starting the TRW" <<endl;
@@ -98,35 +117,62 @@ void trw(image &Ldata, image &Rdata, vector<vector<int>> &label,
         }
         dual_value = computeDual(trees);
         dual_values.push_back(dual_value);
-        primal_values.push_back(0); //TODO
         cout << "Augmented the global dual by "<< dual_value - old_dual_value
              <<", incremental improvement report "<< improvement<< endl;
+ 
+        // Compute the primal increase at this iteration
+        workQueue.push(trees);
     }
 
     cout << "Value of the dual: " << dual_value << endl;
 
-    cout << "Do the projection to get the labels" << endl;
+    cout << "Waiting for the worker to finish" << endl;
+    // Add a signal to stop the worker
+    workQueue.push(vector<tree>());
+    worker.join();
+
+    cout << "Do the projection to get the final labels" << endl;
     projection(treeLookup, nodeLookup, label);
     double primal_val = computePrimal( Ldata, Rdata, label);
     cout << "Value of the primal: "<< primal_val <<endl;
 }
 
+void infiniteWorker(Queue<vector<tree>> &workQueue,
+                    image &Ldata, image &Rdata,
+                    vector<float> &primal_values) {
+    int height = Ldata.height;
+    int width = Ldata.width;
+    vector<tree> trees;
+    vector<vector<reference_wrapper<tree>>> treeLookup;
+    vector<vector<reference_wrapper<node>>> nodeLookup;
+
+    cout<<"Worker ready"<<endl;
+    while(true) {
+        trees = workQueue.pop();
+        if(trees.size() == 0) {
+            cout<<"Worker exiting"<<endl;
+            break;
+        }
+        vector<vector<int>> label = vector<vector<int>>(height, vector<int>(width, NBR_CLASSES));
+        treeLookup = vector<vector<reference_wrapper<tree>>>();
+        nodeLookup = vector<vector<reference_wrapper<node>>>();
+        // Recreate the lookup table on the copie of the trees
+        generateLookupTables(width, height, trees, treeLookup, nodeLookup);
+        // Do the projection
+        projection(treeLookup, nodeLookup, label);
+        // compute the primal value
+        primal_values.push_back(computePrimal(Ldata, Rdata, label));
+        // Print the image
+        image labelsImage = image(label);
+        printImage(labelsImage, "labelsImage.png");
+    }
+}
 
 
-void generateTrees(image &Ldata, image &Rdata, vector<tree> &trees,
-                   vector<vector<reference_wrapper<tree>>> &treeLookup,
-                   vector<vector<reference_wrapper<node>>> &nodeLookup){
+void generateTreeList(image &Ldata, image &Rdata, vector<tree> &trees){
 
     int i, j, label;
     int nbrCol = Ldata.width;
-
-    // Initialize lookup tables
-    for(i=0; i<Ldata.width; ++i) {
-        for(j=0; j<Ldata.height; ++j) {
-            treeLookup.push_back( vector<reference_wrapper<tree>>());
-            nodeLookup.push_back( vector<reference_wrapper<node>>());
-        }
-    }
 
     // generate a tree for each column
     for(i=0; i<Ldata.width; ++i) {
@@ -186,6 +232,21 @@ void generateTrees(image &Ldata, image &Rdata, vector<tree> &trees,
 
         tree row_tree = tree(treeNodes, treeEdges);
         trees.push_back(row_tree);
+    }
+}
+
+
+void generateLookupTables(int width, int height, vector<tree> &trees,
+                   vector<vector<reference_wrapper<tree>>> &treeLookup,
+                   vector<vector<reference_wrapper<node>>> &nodeLookup) {
+    int i,j;
+
+    // Initialize lookup tables
+    for(i=0; i<width; ++i) {
+        for(j=0; j<height; ++j) {
+            treeLookup.push_back( vector<reference_wrapper<tree>>());
+            nodeLookup.push_back( vector<reference_wrapper<node>>());
+        }
     }
 
     for (vector<tree>::iterator tree_iter= trees.begin(), tree_end = trees.end();
@@ -272,12 +333,14 @@ void projection(vector<vector<reference_wrapper<tree>>> &treeLookup,
     int i, source_label, selected_label, best_nbr;
     int width = label[0].size();
 
-
+    bool do_print = false;
 
     // Loop over all nodes starting from the end
     int nbr_node = treeLookup.size();
     for(int nodeId=0; nodeId<nbr_node; ++nodeId) {
-        cout<<"\rCurrent Node: "<<(nodeId+1)<<"/"<<nbr_node<<flush;
+        if(do_print) {
+            cout<<"\rCurrent Node: "<<(nodeId+1)<<"/"<<nbr_node<<flush;
+        }
         vector<reference_wrapper<tree>> &tree_containing_node = treeLookup[nodeId];
         vector<reference_wrapper<node>> &node_ref = nodeLookup[nodeId];
         // All the desired labels for this node
@@ -324,5 +387,7 @@ void projection(vector<vector<reference_wrapper<tree>>> &treeLookup,
             }
         }
     }
-    cout<<endl;
+    if (do_print) {
+        cout<<endl;
+    }
 }
